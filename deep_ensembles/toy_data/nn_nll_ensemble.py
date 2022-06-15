@@ -30,8 +30,10 @@ def train_gmm_step(gmm, optimizers, x, y):
 
 if __name__ == "__main__":
     xx, yy, x, y = generate_data(points=20, xrange=(-4, 4), std=3.0)
+
     gmm = GaussianMixtureMLP(num_models=5, hidden_layers=[100])
     gmm_optimizers = []
+
     for i in range(gmm.num_models):
         model = getattr(gmm, "model_" + str(i))
         gmm_optimizers.append(
