@@ -10,3 +10,6 @@ class TrainingParameters:
 
     learning_rate = 0.1
     epochs = 200
+
+    # for adversarial example
+    epsilon = 0.02
