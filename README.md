@@ -19,6 +19,8 @@ This package is the result of code taken/adapted from different GitHub repositor
 - [Wine Quality Red](https://www.kaggle.com/datasets/uciml/red-wine-quality-cortez-et-al-2009)
 - [Yacht Hydrodynamics](https://www.kaggle.com/datasets/heitornunes/yacht-hydrodynamics-data-set)
 - [Year Prediction MSD](https://archive.ics.uci.edu/ml/machine-learning-databases/00203/)
+- [MNIST](http://yann.lecun.com/exdb/mnist/)
+- [SVHN](http://ufldl.stanford.edu/housenumbers/)
   
 # References
 

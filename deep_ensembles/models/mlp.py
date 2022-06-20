@@ -1,5 +1,43 @@
 import torch
 import torch.nn as nn
+from typing import Optional, Callable
+from deep_ensembles.params.TrainingParameters import TrainingParameters
+
+
+def train_mse_ensemble(
+    x: torch.Tensor,
+    y: torch.Tensor,
+    loss_fn: Callable,
+    inputs: int,
+    num_models: Optional[int] = 5,
+    hidden_layers: Optional[list] = [100],
+    use_rmse: Optional[bool] = False,
+):
+    mlps = []
+    for i in range(num_models):
+        net = MLP(
+            inputs=inputs, hidden_layers=hidden_layers, activation="relu"
+        )  # standard MLP
+        mlp_optimizer = torch.optim.Adam(
+            params=net.parameters(), lr=TrainingParameters.learning_rate
+        )
+
+        print("Training network ", i + 1)
+        for epoch in range(40):
+            mlp_optimizer.zero_grad()
+
+            mlp_loss = loss_fn(y, net(x.float()))
+
+            if use_rmse:
+                mlp_loss = torch.sqrt(mlp_loss)
+            if epoch == 0:
+                print("initial loss: ", mlp_loss.item())
+            mlp_loss.backward()
+            mlp_optimizer.step()
+            print("current loss: ", mlp_loss.item())
+        print("final loss: ", mlp_loss.item())
+        mlps.append(net)
+    return mlps
 
 
 class MLP(nn.Module):

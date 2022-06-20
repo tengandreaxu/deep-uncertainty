@@ -1,6 +1,79 @@
 import torch
 import torch.nn as nn
+from typing import Optional
+from losses.nll import NLLloss
 from deep_ensembles.models.gaussian_mlp import GaussianMLP
+from deep_ensembles.params.TrainingParameters import TrainingParameters
+
+
+def train_model_step(
+    model: nn.Module,
+    optimizer: torch.optim.Optimizer,
+    x: torch.Tensor,
+    y: torch.Tensor,
+):
+    """Training an individual gaussian MLP of the deep ensemble."""
+    optimizer.zero_grad()
+    mean, var = model(x.float())
+    loss = NLLloss(y, mean, var)
+    loss.backward()
+    optimizer.step()
+    return loss.item()
+
+
+def train_gmm_step(
+    gmm: nn.Module,
+    optimizers: torch.optim.Optimizer,
+    x: torch.Tensor,
+    y: torch.Tensor,
+):
+    """Training the whole ensemble."""
+    losses = []
+    for i in range(gmm.num_models):
+        model = getattr(gmm, "model_" + str(i))
+
+        loss = train_model_step(model, optimizers[i], x, y)
+        losses.append(loss)
+    return losses
+
+
+def train_gmm_ensemble(
+    x: torch.Tensor,
+    y: torch.Tensor,
+    inputs: int,
+    num_models: Optional[int] = 5,
+    hidden_layers: Optional[list] = [100],
+):
+    """Launches the ensemble
+
+    Args:
+        x, predictors
+        y, labels
+        inputs, number of input units
+        num_models, number of NNS
+        hidden_layers, list of hidden layers
+    """
+    gmm = GaussianMixtureMLP(
+        inputs=inputs, num_models=num_models, hidden_layers=hidden_layers
+    )
+    gmm_optimizers = []
+
+    for i in range(gmm.num_models):
+        model = getattr(gmm, "model_" + str(i))
+        gmm_optimizers.append(
+            torch.optim.Adam(
+                params=model.parameters(),
+                lr=TrainingParameters.learning_rate,
+                weight_decay=4e-5,
+            )
+        )
+    for epoch in range(TrainingParameters.epochs):
+        losses = train_gmm_step(gmm, gmm_optimizers, x, y)
+        if epoch == 0:
+            print("inital losses: ", losses)
+        print("current loss: ", losses)
+    print("final losses: ", losses)
+    return gmm, losses
 
 
 class GaussianMixtureMLP(nn.Module):

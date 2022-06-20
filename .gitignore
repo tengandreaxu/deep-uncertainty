@@ -1,6 +1,8 @@
 # Byte-compiled / optimized / DLL files
+data
 datasets/*.csv
 datasets/*.arff
+datasets/svhn
 
 __pycache__/
 *.py[cod]

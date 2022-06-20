@@ -1,8 +1,7 @@
 import torch
 import torch.nn as nn
 import numpy as np
-from deep_ensembles.models.mlp import MLP
-from deep_ensembles.params.TrainingParameters import TrainingParameters
+from deep_ensembles.models.mlp import train_mse_ensemble
 from deep_ensembles.toy_data.data_generator import generate_data
 from plotting.Plotter import Plotter
 
@@ -11,29 +10,8 @@ if __name__ == "__main__":
     noisy_points_x, noisy_points_y, x, y = generate_data(
         points=20, xrange=(-4, 4), std=3.0
     )
-    mlps = []
-    mlp_optimizers = []
-    mlp_criterion = nn.MSELoss()
-    M = 5
-    for _ in range(M):
-        net = MLP(hidden_layers=[100], activation="relu")  # standard MLP
-        mlps.append(net)
-        mlp_optimizers.append(
-            torch.optim.Adam(
-                params=net.parameters(), lr=TrainingParameters.learning_rate
-            )
-        )
-    # train
-    for i, net in enumerate(mlps):
-        print("Training network ", i + 1)
-        for epoch in range(TrainingParameters.epochs):
-            mlp_optimizers[i].zero_grad()
-            mlp_loss = mlp_criterion(noisy_points_y, net(noisy_points_x))
-            if epoch == 0:
-                print("initial loss: ", mlp_loss.item())
-            mlp_loss.backward()
-            mlp_optimizers[i].step()
-        print("final loss: ", mlp_loss.item())
+
+    mlps = train_mse_ensemble(noisy_points_x, noisy_points_y, nn.MSELoss(), 1)
     ys = []
     for net in mlps:
         ys.append(net(torch.tensor(x).float()).detach().numpy())

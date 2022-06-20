@@ -9,7 +9,11 @@ class TrainingParameters:
     """
 
     learning_rate = 0.1
-    epochs = 200
+    epochs = 40
 
     # for adversarial example
     epsilon = 0.02
+
+    # for real datasets experiments
+    folds = 20
+    random_state = 42

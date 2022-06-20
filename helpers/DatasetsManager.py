@@ -1,6 +1,11 @@
+from cgi import test
 import os
+import torch
+import torchvision
 import pandas as pd
+import torchvision.transforms as transforms
 from scipy.io import arff
+from typing import Optional, Tuple
 from dataclasses import dataclass
 from utils.paths import get_datasets_dir
 import logging
@@ -129,10 +134,59 @@ class DatasetsManager:
                 f"Please specify one of the following datasets: {str(DATASETS)}"
             )
 
+    def load_mnist(self) -> Tuple[list, list, list, list]:
+        """returns the mnist dataset"""
+        from mnist import MNIST
+
+        mndata = MNIST("datasets/mnist")
+        train_images, train_labels = mndata.load_training()
+        test_images, test_labels = mndata.load_testing()
+        return train_images, train_labels, test_images, test_labels
+
+    def torch_load_cifar_10(
+        self, batch_size: Optional[int] = 4
+    ) -> Tuple[
+        torch.utils.data.dataloader.DataLoader, torch.utils.data.dataloader.DataLoader
+    ]:
+        """Returns CIFAR-10 trainset and testset"""
+        transform = transforms.Compose(
+            [
+                transforms.ToTensor(),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            ]
+        )
+
+        trainset = torchvision.datasets.CIFAR10(
+            root="./data", train=True, download=True, transform=transform
+        )
+
+        trainloader = torch.utils.data.DataLoader(
+            trainset, batch_size=batch_size, shuffle=True, num_workers=2
+        )
+        testset = torchvision.datasets.CIFAR10(
+            root="./data", train=False, download=True, transform=transform
+        )
+        testloader = torch.utils.data.DataLoader(
+            testset, batch_size=batch_size, shuffle=False, num_workers=2
+        )
+
+        return trainloader, testloader
+
+    def get_cifar_10_label_names(self) -> list:
+        return [
+            "plane",
+            "car",
+            "bird",
+            "cat",
+            "deer",
+            "dog",
+            "frog",
+            "horse",
+            "ship",
+            "truck",
+        ]
+
 
 if __name__ == "__main__":
     dm = DatasetsManager()
-    for data in DATASETS:
-        print(data)
-        df = dm.load_dataset("year_msd")
-        breakpoint()
+    dm.torch_load_cifar_10()

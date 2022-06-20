@@ -62,4 +62,18 @@ class Plotter:
         plt.ylabel("y")
         plt.title(title)
         plt.legend()
+        plt.tight_layout()
         plt.savefig(file_name)
+        plt.close()
+
+    def scatter_plot(self, x: np.array, y: np.array, file_name: str):
+
+        plt.scatter(x, y)
+        plt.ylabel("Predicted Value")
+        plt.xlabel("True Value")
+        m, b = np.polyfit(x, y, 1)
+
+        plt.plot(x, m * x + b, "r")
+        plt.tight_layout()
+        plt.savefig(file_name)
+        plt.close()
