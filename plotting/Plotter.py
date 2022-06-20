@@ -1,3 +1,4 @@
+import torch
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.pylab as pylab
@@ -77,3 +78,9 @@ class Plotter:
         plt.tight_layout()
         plt.savefig(file_name)
         plt.close()
+
+    def pytorch_imshow(self, image: torch.Tensor):
+        image = image / 2 + 0.5
+        npimg = image.numpy()
+        plt.imshow(np.transpose(npimg, (1, 2, 0)))
+        plt.show()

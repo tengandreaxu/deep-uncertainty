@@ -6,6 +6,7 @@ import pandas as pd
 import torchvision.transforms as transforms
 from scipy.io import arff
 from typing import Optional, Tuple
+from torch.utils.data import random_split
 from dataclasses import dataclass
 from utils.paths import get_datasets_dir
 import logging
@@ -144,7 +145,7 @@ class DatasetsManager:
         return train_images, train_labels, test_images, test_labels
 
     def torch_load_cifar_10(
-        self, batch_size: Optional[int] = 4
+        self, batch_size: Optional[int] = 4, validation_set: Optional[int] = 0
     ) -> Tuple[
         torch.utils.data.dataloader.DataLoader, torch.utils.data.dataloader.DataLoader
     ]:
@@ -160,8 +161,15 @@ class DatasetsManager:
             root="./data", train=True, download=True, transform=transform
         )
 
+        if validation_set > 0:
+            train_ds, val_ds = random_split(
+                trainset, [len(trainset) - validation_set, validation_set]
+            )
+            valloader = torch.utils.data.DataLoader(
+                val_ds, batch_size=batch_size, shuffle=False, num_workers=2
+            )
         trainloader = torch.utils.data.DataLoader(
-            trainset, batch_size=batch_size, shuffle=True, num_workers=2
+            train_ds, batch_size=batch_size, shuffle=True, num_workers=2
         )
         testset = torchvision.datasets.CIFAR10(
             root="./data", train=False, download=True, transform=transform
@@ -170,7 +178,7 @@ class DatasetsManager:
             testset, batch_size=batch_size, shuffle=False, num_workers=2
         )
 
-        return trainloader, testloader
+        return trainloader, valloader, testloader
 
     def get_cifar_10_label_names(self) -> list:
         return [

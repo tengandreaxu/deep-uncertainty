@@ -3,6 +3,7 @@ data
 datasets/*.csv
 datasets/*.arff
 datasets/svhn
+saved_models
 
 __pycache__/
 *.py[cod]
