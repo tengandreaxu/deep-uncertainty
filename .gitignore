@@ -4,7 +4,7 @@ datasets/*.csv
 datasets/*.arff
 datasets/svhn
 saved_models
-
+*.log
 __pycache__/
 *.py[cod]
 *$py.class

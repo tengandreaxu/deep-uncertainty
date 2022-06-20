@@ -17,6 +17,7 @@ if __name__ == "__main__":
 
     Ws_by_epochs_many = load_data(WS_BY_EPOCHS)
     bs_by_epochs_many = load_data(BS_BY_EPOCHS)
+
     dial_gaussian_whole_Ws = [[] for _ in range(points_to_collect)]
     dial_gaussian_whole_bs = [[] for _ in range(points_to_collect)]
 

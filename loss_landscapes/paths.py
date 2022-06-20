@@ -6,6 +6,8 @@ WS_TRAJECTORY = os.path.join(OUTPUT_FOLDER, "ws_trajectory.dat")
 BS_TRAJECTORY = os.path.join(OUTPUT_FOLDER, "bs_trajectory.dat")
 WS_MANY = os.path.join(OUTPUT_FOLDER, "ws_many.dat")
 BS_MANY = os.path.join(OUTPUT_FOLDER, "bs_many.dat")
+WS_BY_EPOCHS = os.path.join(OUTPUT_FOLDER, "ws_by_epochs_many.dat")
+BS_BY_EPOCHS = os.path.join(OUTPUT_FOLDER, "bs_by_epochs_many.dat")
 
 VALIDATION_SET = os.path.join(OUTPUT_FOLDER, "valset.pth")
 
