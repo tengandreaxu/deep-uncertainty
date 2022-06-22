@@ -25,6 +25,17 @@ def get_test_accuracy(
     return test_accuracy
 
 
+def get_labels_from_dataloader(
+    dataloader: torch.utils.data.dataloader.DataLoader,
+) -> torch.Tensor:
+    """returns all labels from dataloader"""
+    labels = []
+    for data in dataloader:
+        _, label = data
+        labels.append(label)
+    return torch.cat(labels, 0)
+
+
 def print_train_step(
     epoch: int,
     batch: int,

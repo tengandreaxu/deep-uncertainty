@@ -1,7 +1,9 @@
 import os
 import torch
 import time
+import numpy as np
 import torch.nn as nn
+import torch.utils.data as tdata
 from copy import deepcopy
 from helpers.DatasetsManager import DatasetsManager
 from loss_landscapes.models.MediumCNN import MediumCNN
@@ -10,6 +12,7 @@ from loss_landscapes.func_utils import save_data
 from loss_landscapes.paths import (
     BS_BY_EPOCHS,
     BS_MANY,
+    TEST_SET,
     VALIDATION_SET,
     WS_BY_EPOCHS,
     WS_MANY,
@@ -26,6 +29,9 @@ def save_validation_output(outputs: torch.Tensor, epoch: int, num_id: int):
     run = os.path.join(VALIDATION_OUTPUTS, str(num_id))
     os.makedirs(run, exist_ok=True)
     torch.save(outputs, os.path.join(run, str(epoch)))
+
+
+RANDOM_SAMPLE = "random_sampling"
 
 
 def train_all():
@@ -48,13 +54,13 @@ def train_all():
 
     N_val = 500
     dm = DatasetsManager()
-    trainloader, valloader, testloader = dm.torch_load_cifar_10(
-        batch_size=batch_size, validation_set=N_val
+    trainloader, valloader, testloader, train_ds, _, _ = dm.torch_load_cifar_10(
+        batch_size=1, validation_set=N_val
     )
 
     torch.save(trainloader, os.path.join(OUTPUT_FOLDER, "trainset.pth"))
     torch.save(valloader, VALIDATION_SET)
-    torch.save(testloader, os.path.join(OUTPUT_FOLDER, "testset.pth"))
+    torch.save(testloader, TEST_SET)
 
     # Collecting last epochs from each trajectory
     Ws_by_epochs_many = [[] for _ in range(points_to_collect)]
@@ -83,20 +89,32 @@ def train_all():
                 lr = lr / 2
                 optimizer.param_groups[0]["lr"] = lr
 
-            # TODO random choice
-            for i, data in enumerate(trainloader, 0):
+            # random choice Batch training
+            iterations = int(np.floor(float(len(trainloader)) / float(batch_size)))
+            for i in range(iterations):
+                train_sampler = tdata.RandomSampler(train_ds, num_samples=batch_size)
+                dataloader = tdata.dataloader.DataLoader(
+                    train_ds, batch_size=batch_size, sampler=train_sampler
+                )
+                for _, data in enumerate(dataloader, 0):
 
-                inputs, labels = data
-                optimizer.zero_grad()
-                outputs = cnn(inputs)
-                loss = criterion(outputs, labels)
-                loss.backward()
-                optimizer.step()
+                    inputs, labels = data
+                    optimizer.zero_grad()
+                    outputs = cnn(inputs)
+                    loss = criterion(outputs, labels)
+                    loss.backward()
+                    optimizer.step()
 
-                if i % 100 == 0 or i == len(trainloader) - 1:
-                    correct, total_labels = print_train_step(
-                        epoch, i, labels, loss.item(), outputs, correct, total_labels
-                    )
+                    if i % 100 == 0 or i == len(trainloader) - 1:
+                        correct, total_labels = print_train_step(
+                            epoch,
+                            i,
+                            labels,
+                            loss.item(),
+                            outputs,
+                            correct,
+                            total_labels,
+                        )
 
             # end epoch
 
@@ -143,8 +161,9 @@ def train_all():
         save_data(bs_many, BS_MANY)
         save_data(Ws_by_epochs_many, WS_BY_EPOCHS)
         save_data(bs_by_epochs_many, BS_BY_EPOCHS)
-
-        torch.save(cnn.state_dict, f"saved_models/loss_landscapes/mediumCNN{point_id}")
+        output_dir = "saved_models/loss_landscapes/random_sampling"
+        os.makedirs(output_dir, exist_ok=True)
+        torch.save(cnn.state_dict, os.path.join(output_dir, f"mediumCNN{point_id}"))
 
 
 if __name__ == "__main__":

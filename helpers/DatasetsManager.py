@@ -178,7 +178,7 @@ class DatasetsManager:
             testset, batch_size=batch_size, shuffle=False, num_workers=2
         )
 
-        return trainloader, valloader, testloader
+        return trainloader, valloader, testloader, train_ds, val_ds, testset
 
     def get_cifar_10_label_names(self) -> list:
         return [

@@ -7,6 +7,8 @@ from utils.pytorch_custom import accuracy
 
 
 class MediumCNN(nn.Module):
+    architecture = ["conv1", "conv2", "conv3", "conv4", "fc1"]
+
     def __init__(self):
 
         super(MediumCNN, self).__init__()
