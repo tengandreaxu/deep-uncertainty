@@ -1,6 +1,9 @@
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from typing import Tuple
+from utils.pytorch_custom import accuracy
 
 
 class SmallCNN(nn.Module):
@@ -56,3 +59,32 @@ class SmallCNN(nn.Module):
 
         x = self.fc1(x)
         return x
+
+    def validation_step(
+        self, validation_set: torch.utils.data.dataloader.DataLoader
+    ) -> Tuple[float, float]:
+        accuracies = []
+        losses = []
+        for batch in validation_set:
+            images, labels = batch
+            output = self(images)
+            loss = nn.CrossEntropyLoss()(output, labels)
+            accuracies.append(accuracy(output, labels))
+            losses.append(loss.item())
+        return np.mean(accuracies), np.mean(losses)
+
+    def get_validation_predictions(
+        self, validation_loader: torch.utils.data.dataloader.DataLoader
+    ) -> Tuple[torch.Tensor, float, float]:
+        with torch.no_grad():
+            accuracies = []
+            losses = []
+            outputs = []
+            for batch in validation_loader:
+                images, labels = batch
+                output = self(images)
+                outputs.append(output)
+                loss = nn.CrossEntropyLoss()(output, labels)
+                accuracies.append(accuracy(output, labels))
+                losses.append(loss.item())
+        return torch.cat(outputs, 0), np.mean(accuracies), np.mean(losses)

@@ -33,7 +33,7 @@ def save_validation_output(
     outputs: torch.Tensor, output_dir: str, epoch: int, num_id: int
 ):
     if len(output_dir) > 0:
-        out = os.path.join(output_dir, OUTPUT_FOLDER, FileNames.validation_outputs)
+        out = os.path.join(output_dir, FileNames.validation_outputs)
         os.makedirs(out, exist_ok=True)
     else:
         out = VALIDATION_OUTPUTS
@@ -71,11 +71,9 @@ def get_and_save_datasets(
     testset_path = TEST_SET
     if len(output_dir):
         os.makedirs(output_dir, exist_ok=True)
-        new_output_folder = os.path.join(output_dir, OUTPUT_FOLDER)
-        os.makedirs(new_output_folder, exist_ok=True)
-        trainset_path = os.path.join(new_output_folder, FileNames.trainset)
-        validationset_path = os.path.join(new_output_folder, FileNames.validationset)
-        testset_path = os.path.join(new_output_folder, FileNames.testset)
+        trainset_path = os.path.join(output_dir, FileNames.trainset)
+        validationset_path = os.path.join(output_dir, FileNames.validationset)
+        testset_path = os.path.join(output_dir, FileNames.testset)
 
     torch.save(trainloader, trainset_path)
     torch.save(valloader, validationset_path)
@@ -172,7 +170,7 @@ def train_all(model: str, independent_runs: int, output_dir: str, force_gpu: boo
                 state_dict["conv1.weight"],
                 state_dict["conv2.weight"],
                 state_dict["conv3.weight"],
-                state_dict["conv4.weight"],
+                # state_dict["conv4.weight"],
                 state_dict["fc1.weight"],
             ]
 
@@ -180,7 +178,7 @@ def train_all(model: str, independent_runs: int, output_dir: str, force_gpu: boo
                 state_dict["conv1.bias"],
                 state_dict["conv2.bias"],
                 state_dict["conv3.bias"],
-                state_dict["conv4.bias"],
+                # state_dict["conv4.bias"],
                 state_dict["fc1.bias"],
             ]
 
@@ -200,37 +198,25 @@ def train_all(model: str, independent_runs: int, output_dir: str, force_gpu: boo
                 # c  # lasses[point_id][epoch] =
             end_time = time.monotonic()
             print(f"Epoch training time: {end_time - start_time}")
+
+        # _many saves all last weights
         Ws_many.append(Ws_opt_out_now)
         bs_many.append(bs_opt_out_now)
         losses_many.append(val_loss)
         accs_many.append(val_acc)
 
-        if len(output_dir) > 0:
-            ws_trajectory_folder = os.path.join(
-                output_dir, OUTPUT_FOLDER, FileNames.ws_trajectory
-            )
-            bs_trajectory_folder = os.path.join(
-                output_dir, OUTPUT_FOLDER, FileNames.bs_trajectory
-            )
+        mean_acc = np.mean(accs_many)
+        std_acc = np.std(accs_many)
+        print(f"mean accuracy: {mean_acc:.3f}, std accruacy: {std_acc:.3f}")
+        ws_trajectory_folder = os.path.join(output_dir, FileNames.ws_trajectory)
+        bs_trajectory_folder = os.path.join(output_dir, FileNames.bs_trajectory)
 
-            ws_many_folder = os.path.join(output_dir, OUTPUT_FOLDER, FileNames.ws_many)
-            bs_many_folder = os.path.join(output_dir, OUTPUT_FOLDER, FileNames.bs_many)
+        ws_many_folder = os.path.join(output_dir, FileNames.ws_many)
+        bs_many_folder = os.path.join(output_dir, FileNames.bs_many)
 
-            ws_by_epochs_folder = os.path.join(
-                output_dir, OUTPUT_FOLDER, FileNames.ws_by_epochs
-            )
-            bs_by_epochs_folder = os.path.join(
-                output_dir, OUTPUT_FOLDER, FileNames.bs_by_epochs
-            )
-        else:
-            ws_trajectory_folder = WS_TRAJECTORY
-            bs_trajectory_folder = BS_TRAJECTORY
+        ws_by_epochs_folder = os.path.join(output_dir, FileNames.ws_by_epochs)
+        bs_by_epochs_folder = os.path.join(output_dir, FileNames.bs_by_epochs)
 
-            ws_many_folder = WS_MANY
-            bs_many_folder = BS_MANY
-
-            ws_by_epochs_folder = WS_BY_EPOCHS
-            bs_by_epochs_folder = BS_BY_EPOCHS
         save_data(Ws_trajectory, ws_trajectory_folder)
         save_data(bs_trajectory, bs_trajectory_folder)
         save_data(Ws_many, ws_many_folder)
@@ -238,14 +224,18 @@ def train_all(model: str, independent_runs: int, output_dir: str, force_gpu: boo
         save_data(Ws_by_epochs_many, ws_by_epochs_folder)
         save_data(bs_by_epochs_many, bs_by_epochs_folder)
         os.makedirs(output_dir, exist_ok=True)
-        torch.save(cnn.state_dict, os.path.join(output_dir, f"mediumCNN{point_id}"))
+        torch.save(cnn.state_dict(), os.path.join(output_dir, f"mediumCNN{point_id}"))
 
 
 def get_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--output-dir", dest="output_dir", type=str, help="where to save all results"
+        "--output-dir",
+        dest="output_dir",
+        type=str,
+        help="where to save all results",
+        required=True,
     )
     parser.set_defaults(output_dir="")
 

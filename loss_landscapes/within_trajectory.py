@@ -4,11 +4,16 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 from typing import Optional
+from loss_landscapes.data_management import (
+    load_saved_validation_set_labels,
+    load_validation_output,
+)
 from loss_landscapes.func_utils import flatten, load_data
 from loss_landscapes.models.MediumCNN import MediumCNN
 from utils.linear_algebra import cosine_between
 from utils.pytorch_custom import accuracy
 from loss_landscapes.paths import (
+    OUTPUT_FOLDER,
     WS_TRAJECTORY,
     BS_TRAJECTORY,
     VALIDATION_OUTPUTS,
@@ -95,18 +100,11 @@ def get_trajectory_preds_test(
     """Return a list of prediction for each independent training for each epoch"""
     epochs = len(Ws_trajectory[0])
     trajectory_preds_test = np.zeros((num_trajectory_record, epochs, N_val, classes))
-    validator = torch.load(VALIDATION_SET)
+    vals = load_saved_validation_set_labels(OUTPUT_FOLDER)
     if load_saved_validation:
         for id_now in range(num_trajectory_record):
             for e in range(epochs):
-                validation_output = torch.load(
-                    os.path.join(VALIDATION_OUTPUTS, str(id_now), str(e))
-                )
-                vals = []
-                for valid in validator:
-                    _, labels = valid
-                    vals.append(labels)
-                vals = torch.cat(vals, 0)
+                validation_output = load_validation_output(OUTPUT_FOLDER, id_now, e)
 
                 acc = accuracy(validation_output, vals)
                 print(f"Run: {id_now} Epoch: {e} Val Accuracy: {acc:.3f}")

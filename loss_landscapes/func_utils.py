@@ -3,7 +3,20 @@ import numpy as np
 import torch
 from typing import Any, Optional
 from utils.scores import brier_scores
-from sklearn.metrics import brier_score_loss
+from loss_landscapes.models.SmallCNN import SmallCNN
+from loss_landscapes.models.MediumCNN import MediumCNN
+from loss_landscapes.ModelNames import ModelNames
+
+
+def get_cnn(model_name: str) -> torch.nn.Module:
+    """returns a cnn model from the name"""
+    if model_name not in [ModelNames.mediumCNN, ModelNames.smallCNN]:
+        raise Exception("Please specify a valid model: [smallCNN, mediumCNN]")
+
+    if model_name == ModelNames.mediumCNN:
+        return MediumCNN()
+    else:
+        return SmallCNN()
 
 
 def flatten(Ws1: np.array, bs1: np.array):

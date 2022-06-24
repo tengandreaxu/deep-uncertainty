@@ -1,3 +1,5 @@
+hpc-trains/*
+
 # Byte-compiled / optimized / DLL files
 data
 datasets/*.csv
