@@ -13,7 +13,13 @@ class GaussianMLP(MLP):
 
     """
 
-    def __init__(self, inputs=1, outputs=1, hidden_layers=[100], activation="relu"):
+    def __init__(
+        self,
+        inputs=1,
+        outputs=1,
+        hidden_layers=[100],
+        activation="relu",
+    ):
         super(GaussianMLP, self).__init__(
             inputs=inputs,
             outputs=2 * outputs,
@@ -28,6 +34,8 @@ class GaussianMLP(MLP):
         for i in range(self.nLayers):
             layer = getattr(self, "layer_" + str(i))
             x = self.act(layer(x))
+
+        # get the last layer
         layer = getattr(self, "layer_" + str(self.nLayers))
         x = layer(x)
         mean, variance = torch.split(x, self.outputs, dim=1)

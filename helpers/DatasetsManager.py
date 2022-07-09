@@ -162,6 +162,7 @@ class DatasetsManager:
         )
 
         if validation_set > 0:
+
             train_ds, val_ds = random_split(
                 trainset, [len(trainset) - validation_set, validation_set]
             )

@@ -53,11 +53,15 @@ def train_gmm_ensemble(
         num_models, number of NNS
         hidden_layers, list of hidden layers
     """
+    # Initialize A Gaussian Mixture Neural Net with num_models Gaussians
     gmm = GaussianMixtureMLP(
-        inputs=inputs, num_models=num_models, hidden_layers=hidden_layers
+        inputs=inputs,
+        num_models=num_models,
+        hidden_layers=hidden_layers,
     )
     gmm_optimizers = []
 
+    # Initialize As many optimizers as Gaussians
     for i in range(gmm.num_models):
         model = getattr(gmm, "model_" + str(i))
         gmm_optimizers.append(
@@ -67,6 +71,8 @@ def train_gmm_ensemble(
                 weight_decay=4e-5,
             )
         )
+
+    # Train all Gaussian Models
     for epoch in range(TrainingParameters.epochs):
         losses = train_gmm_step(gmm, gmm_optimizers, x, y)
         if epoch == 0:
@@ -88,7 +94,12 @@ class GaussianMixtureMLP(nn.Module):
     """
 
     def __init__(
-        self, num_models=5, inputs=1, outputs=1, hidden_layers=[100], activation="relu"
+        self,
+        num_models=5,
+        inputs=1,
+        outputs=1,
+        hidden_layers=[100],
+        activation="relu",
     ):
         super(GaussianMixtureMLP, self).__init__()
         self.num_models = num_models
@@ -96,6 +107,8 @@ class GaussianMixtureMLP(nn.Module):
         self.outputs = outputs
         self.hidden_layers = hidden_layers
         self.activation = activation
+
+        # Sets the Gaussian Mixture Networks
         for i in range(self.num_models):
             model = GaussianMLP(
                 inputs=self.inputs,

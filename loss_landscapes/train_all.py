@@ -224,7 +224,7 @@ def train_all(model: str, independent_runs: int, output_dir: str, force_gpu: boo
         save_data(Ws_by_epochs_many, ws_by_epochs_folder)
         save_data(bs_by_epochs_many, bs_by_epochs_folder)
         os.makedirs(output_dir, exist_ok=True)
-        torch.save(cnn.state_dict(), os.path.join(output_dir, f"mediumCNN{point_id}"))
+        torch.save(cnn.state_dict(), os.path.join(output_dir, f"CNN{point_id}"))
 
 
 def get_args():

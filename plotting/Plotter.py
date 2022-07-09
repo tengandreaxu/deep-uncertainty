@@ -1,3 +1,4 @@
+from concurrent.futures.thread import BrokenThreadPool
 import torch
 import numpy as np
 import matplotlib.pyplot as plt
@@ -67,11 +68,12 @@ class Plotter:
         plt.savefig(file_name)
         plt.close()
 
-    def scatter_plot(self, x: np.array, y: np.array, file_name: str):
+    def scatter_plot(self, x: np.ndarray, y: np.ndarray, file_name: str):
 
         plt.scatter(x, y)
         plt.ylabel("Predicted Value")
         plt.xlabel("True Value")
+
         m, b = np.polyfit(x, y, 1)
 
         plt.plot(x, m * x + b, "r")

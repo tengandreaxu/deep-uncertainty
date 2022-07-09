@@ -57,7 +57,7 @@ def analyze_accuracy_mean_and_std(model: str, model_folder: str, independent_run
         cnn = get_cnn(model)
         cnn.load_state_dict(state_dict)
         breakpoint()
-        _, val_acc, _ = cnn.get_validation_predictions()
+        _, val_acc, _ = cnn.get_validation_predictions(validation_set)
 
 
 if __name__ == "__main__":

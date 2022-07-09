@@ -13,7 +13,14 @@ torch.set_num_threads(25)
 def train_cifar_10_model(cnn: torch.nn.Module, model_type: str):
     dm = DatasetsManager()
 
-    trainloader, testloader = dm.torch_load_cifar_10(batch_size=cnn.batch_size)
+    (
+        trainloader,
+        valloader,
+        testloader,
+        train_dss,
+        val_ds,
+        testset,
+    ) = dm.torch_load_cifar_10(batch_size=cnn.batch_size, validation_set=500)
     lr = cnn.learning_rate
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(params=cnn.parameters(), lr=lr)
@@ -28,6 +35,7 @@ def train_cifar_10_model(cnn: torch.nn.Module, model_type: str):
             optimizer.param_groups[0]["lr"] = lr
 
         for i, data in enumerate(trainloader, 0):
+
             inputs, labels = data
             optimizer.zero_grad()
             outputs = cnn(inputs)

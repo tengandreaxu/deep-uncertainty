@@ -21,8 +21,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
     dm = DatasetsManager()
     plotter = Plotter()
-    df = dm.load_dataset("boston_housing")
-    y = df.pop("MEDV")
+    df = dm.load_dataset("concrete")
+
+    y = df.pop("concrete_compressive_strength")
 
     losses = []
     inputs = len(df.columns)
@@ -64,26 +65,22 @@ if __name__ == "__main__":
             plotter.scatter_plot(
                 y_test.reshape(1, y_test.shape[0]).numpy()[0],
                 predicted_y.numpy(),
-                file_name=os.path.join(scatter_plot_name, "boston_mse.png"),
+                file_name=os.path.join(scatter_plot_name, "concrete_mse.png"),
             )
             loss = np.sqrt(nn.MSELoss()(y_test, predicted_y.reshape(-1, 1)))
             losses.append(loss)
 
         else:
             gmm, losses = train_gmm_ensemble(
-                X_train,
-                y_train,
-                inputs=inputs,
-                hidden_layers=hidden_layers,
+                X_train, y_train, inputs=inputs, hidden_layers=hidden_layers
             )
 
             mean, var = gmm(X_test.float())
-
             avg_loss = NLLloss(y_test, mean, var)
             plotter.scatter_plot(
                 y_test.numpy().reshape(1, y_test.shape[0])[0],
                 mean.detach().numpy().reshape(1, mean.shape[0])[0],
-                file_name=os.path.join(scatter_plot_name, "boston_nll.png"),
+                file_name=os.path.join(scatter_plot_name, "concrete_nll.png"),
             )
             loss = avg_loss.detach().numpy()
 

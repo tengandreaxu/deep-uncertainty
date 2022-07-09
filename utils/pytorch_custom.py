@@ -45,6 +45,7 @@ def print_train_step(
     correct: int,
     total_labels: int,
 ) -> Tuple[float, float]:
+    breakpoint()
     _, train_correct = torch.max(outputs.data, 1)
     correct += (train_correct == labels).sum().item()
     total_labels += len(labels)
